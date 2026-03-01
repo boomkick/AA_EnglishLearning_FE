@@ -1,18 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { levelTierFromXp, tierRange } from "@/lib/gamification";
-import { StatsCard } from "@/components/StatsCard";
+import {
+  levelFromXp,
+  levelProgress,
+  rewardPointsFromLevel,
+  VND_PER_POINT,
+} from "@/lib/gamification";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StreakBadge } from "@/components/StreakBadge";
 import { SkillDistribution } from "@/components/SkillDistribution";
+import { LevelRewardsOverlay } from "@/components/LevelRewardsOverlay";
 
 export default function Home() {
   const { user, weeklyPlan, derived } = useAppStore();
-  const tier = levelTierFromXp(derived.levelXpTotal);
-  const range = tierRange(tier);
-  const tierProgress = derived.levelXpTotal - range.min;
-  const tierMax = range.max - range.min;
+  const [showRewardsOverlay, setShowRewardsOverlay] = useState(false);
+
+  const level = levelFromXp(derived.levelXpTotal);
+  const rewardPoints = rewardPointsFromLevel(level);
+  const progress = levelProgress(derived.levelXpTotal);
 
   const weeklyPct =
     weeklyPlan.xpTarget > 0
@@ -44,12 +51,24 @@ export default function Home() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-4">
-        <StatsCard
-          title="Current tier"
-          value={tier}
-          subtitle={`${derived.levelXpTotal} XP total`}
-          className="md:col-span-1"
-        />
+        <button
+          type="button"
+          onClick={() => setShowRewardsOverlay(true)}
+          className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:border-accent hover:bg-zinc-50 md:col-span-1"
+        >
+          <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+            Level
+          </div>
+          <div className="mt-1 text-2xl font-semibold text-zinc-900">
+            {level}
+          </div>
+          <div className="mt-1 text-xs text-zinc-500">
+            {derived.levelXpTotal} XP · {(rewardPoints * VND_PER_POINT).toLocaleString("vi-VN")} VND
+          </div>
+          <div className="mt-2 text-[11px] text-zinc-400">
+            Click to see rewards
+          </div>
+        </button>
         <section className="md:col-span-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center justify-between text-xs">
             <div className="font-medium uppercase tracking-wide text-zinc-500">
@@ -86,15 +105,14 @@ export default function Home() {
                 Level progress
               </div>
               <div className="mt-1 text-sm text-zinc-600">
-                From {range.min} to {range.max} XP ({tier})
+                {progress.xpInLevel} / 500 XP to Level {level + 1}
               </div>
             </div>
             <div className="text-right text-xs text-zinc-500">
-              <div>{tierProgress} XP into {tier}</div>
-              <div>{tierMax - tierProgress} XP to next tier checkpoint</div>
+              <div>{progress.xpToNext} XP to next level</div>
             </div>
           </div>
-          <ProgressBar value={tierProgress} max={tierMax || 1} />
+          <ProgressBar value={progress.xpInLevel} max={500} />
           <div className="mt-2 flex flex-wrap gap-2 text-xs">
             <span className="rounded-full bg-zinc-100 px-2 py-1 text-zinc-700">
               User: {user.displayName}
@@ -126,6 +144,16 @@ export default function Home() {
           Adjust weekly plan
         </a>
       </section>
+
+      {showRewardsOverlay && (
+        <LevelRewardsOverlay
+          level={level}
+          rewardPoints={rewardPoints}
+          pointsUsed={user.rewardPointsUsed ?? 0}
+          onPointsUsedChange={(v) => useAppStore.getState().actions.setRewardPointsUsed(v)}
+          onClose={() => setShowRewardsOverlay(false)}
+        />
+      )}
     </div>
   );
 }

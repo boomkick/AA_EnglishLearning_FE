@@ -14,6 +14,7 @@ export type User = {
   displayName: string;
   xpTotal: number;
   weeklyXpTarget: number;
+  rewardPointsUsed?: number;
 };
 
 export type Skill = {

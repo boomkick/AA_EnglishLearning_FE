@@ -1,22 +1,22 @@
-import type { LevelTier } from "@/lib/types";
+const XP_PER_LEVEL = 500;
 
-export function levelTierFromXp(xpTotal: number): LevelTier {
-  if (xpTotal >= 2500) return "Diamond";
-  if (xpTotal >= 1000) return "Gold";
-  if (xpTotal >= 300) return "Silver";
-  return "Bronze";
+export const VND_PER_POINT = 100_000;
+
+export function levelFromXp(xpTotal: number): number {
+  return Math.floor(xpTotal / XP_PER_LEVEL) + 1;
 }
 
-export function tierRange(tier: LevelTier) {
-  switch (tier) {
-    case "Bronze":
-      return { min: 0, max: 300 };
-    case "Silver":
-      return { min: 300, max: 1000 };
-    case "Gold":
-      return { min: 1000, max: 2500 };
-    case "Diamond":
-      return { min: 2500, max: 4000 };
-  }
+export function rewardPointsFromLevel(level: number): number {
+  return level;
+}
+
+export function levelProgress(xpTotal: number) {
+  const xpInLevel = xpTotal % XP_PER_LEVEL;
+  return {
+    xpInLevel,
+    xpToNext: XP_PER_LEVEL - xpInLevel,
+    levelMin: Math.floor(xpTotal / XP_PER_LEVEL) * XP_PER_LEVEL,
+    levelMax: Math.floor(xpTotal / XP_PER_LEVEL) * XP_PER_LEVEL + XP_PER_LEVEL,
+  };
 }
 

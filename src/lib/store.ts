@@ -42,6 +42,7 @@ export type AppActions = {
   completeMission: (templateId: string) => void;
   setWeeklyTarget: (xp: number) => void;
   setSkillFocus: (percentages: Partial<Record<SkillId, number>>) => void;
+  setRewardPointsUsed: (points: number) => void;
 };
 
 type Store = AppState & {
@@ -175,6 +176,17 @@ export const useAppStore = create<Store>((set, get) => {
           ...next,
           derived: computeDerived(next),
         });
+      },
+      setRewardPointsUsed: (points: number) => {
+        const state = get();
+        const next: AppState = {
+          ...state,
+          user: {
+            ...state.user,
+            rewardPointsUsed: Math.max(0, Math.floor(points)),
+          },
+        };
+        set(next);
       },
     },
   };

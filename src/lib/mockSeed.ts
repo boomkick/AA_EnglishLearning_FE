@@ -116,6 +116,7 @@ export const defaultUser: User = {
   displayName: "You",
   xpTotal: 860,
   weeklyXpTarget: 450,
+  rewardPointsUsed: 0,
 };
 
 const last21 = lastNDaysYmd(21);
